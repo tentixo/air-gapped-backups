@@ -1,0 +1,10 @@
+{
+  "s3-bucket-name": "bkt-org-example-en1",
+  "aws-region": "eu-north-1",
+  "aws-key-id": "THEAWSKEY",
+  "session-in-seconds": 3600,
+  "sts-role": "arn:aws:iam::012345678910:role/_bkpHclToUploadBackups",
+  "multipart-threshold-mb": 50,
+  "max-concurrency": 10,
+  "multipart-chunksize-mb": 50
+}
