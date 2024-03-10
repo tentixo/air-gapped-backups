@@ -17,24 +17,25 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
+from decouple import config
 
 import logging
 from logging.config import dictConfig
 
-# Import the paths and variables
-logging_config = settings.LOGGING_CONFIG_PATH
+ENV = config('ENV')
 
-with open(logging_config, 'r') as log_json:
+# Set up logging
+LOGGING_CONFIG_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-logging-config.json")
+with open(LOGGING_CONFIG_PATH, 'r') as log_json:
     log_cfg = json.load(log_json)
 logging.config.dictConfig(log_cfg)
 logger = logging.getLogger(__name__)
 
-config_path = settings.CONFIG_PATH
-config_secrets_path = settings.CONFIG_SECRETS_PATH
-
-# Import config files
-bkp_config = utilities.load_data_from_disk(config_path)
-bkp_secrets = utilities.load_data_from_disk(config_secrets_path)
+# Get the configs
+CONFIG_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-config.json")
+CONFIG_SECRETS_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-secrets.json")
+bkp_config = utilities.load_data_from_disk(CONFIG_PATH)
+bkp_secrets = utilities.load_data_from_disk(CONFIG_SECRETS_PATH)
 
 # Create an STS client using the loaded credentials
 sts_client = boto3.client(
@@ -96,13 +97,10 @@ def upload_file_to_s3(local_file_dir, file_name, s3_folder_name, s3_object_name=
         object_path_in_s3 = f"{folder_path}{s3_object_name}"
         logger.debug(f"Crated S3 object path: {object_path_in_s3}")
 
-        threshold = bkp_config['multipart-threshold']
-        concurrency = bkp_config['max-concurrency']
-        chunk_size = bkp_config['multipart-chunksize']
         # Configure the multipart upload
-        transfer_config = TransferConfig(multipart_threshold=1024 * threshold,
-                                         max_concurrency=concurrency,
-                                         multipart_chunksize=1024 * chunk_size,
+        transfer_config = TransferConfig(multipart_threshold=1024 * bkp_config['multipart-threshold-mb'],
+                                         max_concurrency=bkp_config['max-concurrency'],
+                                         multipart_chunksize=1024 * bkp_config['multipart-chunksize-mb'],
                                          use_threads=True)
 
         s3_resource.meta.client.upload_file(file_path_locally, bkp_config['s3-bucket-name'], object_path_in_s3,
@@ -118,7 +116,7 @@ def upload_file_to_s3(local_file_dir, file_name, s3_folder_name, s3_object_name=
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Upload files to S3')
-    parser.add_argument('local_file_dir', type=str, help='Local path to directory with file to upload')
+    parser.add_argument('local_file_dir', type=str, help='Local path to directory with file to upload.')
     parser.add_argument('file_name', type=str, help='The name of the file to upload.')
     parser.add_argument('s3_folder_name', type=str, help='The S3 folder name.')
 
