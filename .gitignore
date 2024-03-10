@@ -5,6 +5,7 @@
 # Credentials
 .vault_password
 *_vault.*
+*-config.*
 *-secrets.*
 
 ### venv template

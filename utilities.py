@@ -11,18 +11,22 @@ Text as UTF-8 only.
 __author__ = "Lars Mårelius <morre@tentixo.com>"
 
 import settings
+
 import json
 import yaml
 import csv
+import os
 import fnmatch
 import jsonschema
 import logging
 from logging.config import dictConfig
+from decouple import config
 
-# Import the paths and variables
-logging_config = settings.LOGGING_CONFIG_PATH
+ENV = config('ENV')
 
-with open(logging_config, 'r') as log_json:
+# Set up logging
+LOGGING_CONFIG_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-logging-config.json")
+with open(LOGGING_CONFIG_PATH, 'r') as log_json:
     log_cfg = json.load(log_json)
 logging.config.dictConfig(log_cfg)
 logger = logging.getLogger(__name__)
@@ -45,7 +49,7 @@ def load_data_from_disk(file_path, schema=None):
             elif fnmatch.fnmatch(file_path, '*.csv'):
                 loaded_data = list(csv.DictReader(fr, delimiter=";"))
             else:
-                print("Unsupported file format: {0}".format(file_path))
+                logger.info("Unsupported file format: {0}".format(file_path))
                 return None
 
             # Optionally validate against the provided JSON Schema
@@ -53,15 +57,15 @@ def load_data_from_disk(file_path, schema=None):
                 try:
                     jsonschema.validate(loaded_data, schema)
                 except jsonschema.ValidationError as e:
-                    print("JSON Schema validation error: {0}".format(e))
+                    logger.error("JSON Schema validation error: {0}".format(e))
                     return None
 
             return loaded_data
     except IOError as e:
-        print("I/O error({0}): {1}".format(e.errno, e.strerror))
-        print("The file path does not exist: {0}".format(file_path))
+        logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
+        logger.error("The file path does not exist: {0}".format(file_path))
     except Exception as e:
-        print("Error reading file: {0}".format(e))
+        logger.error("Error reading file: {0}".format(e))
 
 
 def write_data_to_disk(file_path, data_structure, mode='w'):
@@ -82,5 +86,5 @@ def write_data_to_disk(file_path, data_structure, mode='w'):
                 else:
                     fw.write(file_path)
     except IOError as e:
-        print("I/O error({0}): {1}".format(e.errno, e.strerror))
-        print("The path does not exist: {0}".format(file_path))
+        logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
+        logger.error("The path does not exist: {0}".format(file_path))
