@@ -51,7 +51,7 @@ Apart from the root account, AWS has three other contacts account to add:
 ### Preparation before sign-up
 
 1. Select a new domain: `examplevault.com`
-2. Select what email provider to use
+2. Select what email provider to use for your new domain.
 3. Select share mailbox names for the root admin and base communication:
    1. root (name & email): `Cloud Admin cloud@examplevault.com`
    2. Billing: `billing@examplevault.com`
@@ -60,6 +60,7 @@ Apart from the root account, AWS has three other contacts account to add:
 4. Decide what persons should be AWS Admins.
 5. Choose what phone number should be used for the root account. Remember to change number in the off-boarding process!
 6. Install an authenticator app on root user's phone.
+7. Choose a very strong password for your root account. 24 chars minimum.
 
 ### Step by step AWS account registration
 1. Purchase and your domain and set up DNS.
@@ -73,5 +74,12 @@ Apart from the root account, AWS has three other contacts account to add:
    4. Security: `security@examplevault.com`
 6. Send an email from a non-domain account to your `cloud@examplevault.com` to validate mail flow and read access for your domain user.
 7. Sign up for a new AWS account: [https://portal.aws.amazon.com/billing/signup](https://portal.aws.amazon.com/billing/signup)
-8. Retrieve the sent code to the `cloud@examplevault.com` mailbox to activate your account.
+   1. Root account
+      - Email address
+      - Password
+      - Account name
+   2. Company Information
+   3. Credit Card + Billing address
+8. Retrieve the validation code from `cloud@examplevault.com` and activate your account.
 9. Add MFA to your root account.
+

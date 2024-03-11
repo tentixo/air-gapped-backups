@@ -15,6 +15,7 @@ import utilities
 import json
 import os
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
 from decouple import config
@@ -36,6 +37,16 @@ CONFIG_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-config.json")
 CONFIG_SECRETS_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-secrets.json")
 bkp_config = utilities.load_data_from_disk(CONFIG_PATH)
 bkp_secrets = utilities.load_data_from_disk(CONFIG_SECRETS_PATH)
+
+# Custom configuration for retries and timeouts
+custom_config = Config(
+    retries={
+        'max_attempts': 10,  # Maximum retry attempts
+        'mode': 'adaptive'  # Use the adaptive retry mode
+    },
+    connect_timeout=10,  # How long to wait for the connection to the server (seconds)
+    read_timeout=60,  # How long to wait for a response from the server (seconds)
+)
 
 # Create an STS client using the loaded credentials
 sts_client = boto3.client(
@@ -63,7 +74,8 @@ session = boto3.Session(
 )
 
 # Now you can use this session to interact with AWS services
-s3_resource = session.resource('s3')
+s3_resource = session.resource('s3',
+                               config=custom_config)
 
 
 def upload_file_to_s3(local_file_dir, file_name, s3_folder_name, s3_object_name=None):
