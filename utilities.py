@@ -20,9 +20,10 @@ import fnmatch
 import jsonschema
 import logging
 from logging.config import dictConfig
-from decouple import config
+from dotenv import load_dotenv
 
-ENV = config('ENV')
+load_dotenv()
+ENV = os.getenv("ENV")
 
 # Set up logging
 LOGGING_CONFIG_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-logging-config.json")

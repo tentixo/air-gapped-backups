@@ -15,14 +15,16 @@ import utilities
 import json
 import os
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
-from decouple import config
+from dotenv import load_dotenv
 
 import logging
 from logging.config import dictConfig
 
-ENV = config('ENV')
+load_dotenv()
+ENV = os.getenv("ENV")
 
 # Set up logging
 LOGGING_CONFIG_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-logging-config.json")
@@ -37,17 +39,27 @@ CONFIG_SECRETS_PATH = os.path.join(settings.CONFIG_DIR, f"{ENV}-secrets.json")
 bkp_config = utilities.load_data_from_disk(CONFIG_PATH)
 bkp_secrets = utilities.load_data_from_disk(CONFIG_SECRETS_PATH)
 
+# Custom configuration for retries and timeouts
+custom_config = Config(
+    retries={
+        'max_attempts': bkp_config['client-max-attempts'],  # Maximum retry attempts
+        'mode': 'adaptive'  # Use the adaptive retry mode
+    },
+    connect_timeout=bkp_config['client-connect-timeout-s'],  # How long to wait for the connection to the server (s)
+    read_timeout=bkp_config['client-read-timeout-s'],  # How long to wait for a response from the server (s)
+)
+
 # Create an STS client using the loaded credentials
 sts_client = boto3.client(
     'sts',
     region_name=bkp_config['aws-region'],
-    aws_access_key_id=bkp_config['aws-key-id'],
+    aws_access_key_id=bkp_secrets['aws-key-id'],
     aws_secret_access_key=bkp_secrets['aws-secret-key']
 )
 
 # Assume the role
 assumed_role_object = sts_client.assume_role(
-    RoleArn=bkp_config['sts-role'],
+    RoleArn=bkp_secrets['sts-role'],
     RoleSessionName="AssumeRoleSession1"
 )
 
@@ -63,7 +75,8 @@ session = boto3.Session(
 )
 
 # Now you can use this session to interact with AWS services
-s3_resource = session.resource('s3')
+s3_resource = session.resource('s3',
+                               config=custom_config)
 
 
 def upload_file_to_s3(local_file_dir, file_name, s3_folder_name, s3_object_name=None):
@@ -79,7 +92,7 @@ def upload_file_to_s3(local_file_dir, file_name, s3_folder_name, s3_object_name=
         if s3_object_name is None:
             s3_object_name = file_name
 
-        bucket = s3_resource.Bucket(bkp_config['s3-bucket-name'])
+        bucket = s3_resource.Bucket(bkp_secrets['s3-bucket-name'])
         folder_path = f"{s3_folder_name}/"
 
         # Check if folder exists by trying to list objects with its prefix
@@ -103,7 +116,7 @@ def upload_file_to_s3(local_file_dir, file_name, s3_folder_name, s3_object_name=
                                          multipart_chunksize=1024 * bkp_config['multipart-chunksize-mb'],
                                          use_threads=True)
 
-        s3_resource.meta.client.upload_file(file_path_locally, bkp_config['s3-bucket-name'], object_path_in_s3,
+        s3_resource.meta.client.upload_file(file_path_locally, bkp_secrets['s3-bucket-name'], object_path_in_s3,
                                             Config=transfer_config)
         logger.info(f"Successfully uploaded {file_name} to {object_path_in_s3}")
     except ClientError as e:

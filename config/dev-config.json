@@ -1,0 +1,10 @@
+{
+  "aws-region": "eu-north-1",
+  "session-in-seconds": 7200,
+  "multipart-threshold-mb": 64,
+  "max-concurrency": 20,
+  "multipart-chunksize-mb": 16,
+  "client-max-attempts": 10,
+  "client-connect-timeout-s": 10,
+  "client-read-timeout-s": 60
+}
