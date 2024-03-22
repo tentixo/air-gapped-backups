@@ -18,10 +18,11 @@ Recommended Python ≥ 3.10
 
 ## Recommended Python setup
 1. Install you global Python, the latest version.
-2. Install virtualenv so you have needed dependencies for this script seperated, not in your global python installation.
-3. Create a virtual environment in your project root folder.
-4. Activate your virtual environment.
-5. Install dependencies (see below)
+2. Update pip and setuptools: `pip install --upgrade pip setuptools`
+3. Install virtualenv so you have needed dependencies for this script seperated, not in your global python installation.
+4. Create a virtual environment in your project root folder.
+5. Activate your virtual environment.
+6. Install dependencies (see below)
 
 ## Set up and run the script 
 1. Install needed packages: `pip install -r requirements.txt`
