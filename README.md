@@ -16,10 +16,21 @@ Recommended Python ≥ 3.10
 * The script does not remove the copied file -> Running the script more then once will create a additional versions.
 * The bucket set up in Compliance mode, i.e. "write only - automatic delete" so an uploaded file can not be manually deleted. 
 
+## Recommended Python setup
+1. Install you global Python, the latest version.
+2. Update pip and setuptools: `pip install --upgrade pip setuptools`
+3. Install virtualenv so you have needed dependencies for this script seperated, not in your global python installation.
+4. Create a virtual environment in your project root folder.
+5. Activate your virtual environment.
+6. Install dependencies (see below)
+
 ## Set up and run the script 
 1. Install needed packages: `pip install -r requirements.txt`
 2. Add an `.env` file in the project root stating your environment (dev, test, qa, prod):  
    ```ENV=dev```  
    This is used for the path to config files: `<env>-config,json`, `<env>-secrets` and `<env>-logging-config.json`
-3. Copy the example files in `config/`, remove `_example` and add your values.
+3. Copy the example files in `config/`, remove `_example` and add your values to the stated keys.
 4. Run the script with the following parameters: `"/Path/to/local/directory" "FileInDirectory.txt" "FolderInS3"`
+   1. First: path to local directory.
+   2. Backup file name in the above directory.
+   3. Name of the folder in S3 where to store the file.
